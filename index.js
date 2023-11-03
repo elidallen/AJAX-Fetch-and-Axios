@@ -11,12 +11,12 @@ const progressBar = document.getElementById("progressBar");
 const getFavouritesBtn = document.getElementById("getFavouritesBtn");
 
 // Step 0: Store your API key here for reference and easy access.
-const API_KEY =
-  "live_F7sMAYju6itWoksSPsbOWl9NOr3IEYAE68mE4FBsljoPOkFjXkJnVOxaRgdVGLlG";
+const API_KEY = "live_F7sMAYju6itWoksSPsbOWl9NOr3IEYAE68mE4FBsljoPOkFjXkJnVOxaRgdVGLlG";
 
 axios.defaults.headers.common["x-api-key"] = API_KEY;
 axios.defaults.baseURL = "https://api.thecatapi.com/v1";
 
+// Log the request start time
 axios.interceptors.request.use((config) => {
   console.log("Request started at", new Date());
   progressBar.style.width = "0%";
@@ -34,6 +34,7 @@ axios.interceptors.request.use((config) => {
   return config;
 });
 
+// Log the response time
 axios.interceptors.response.use(
   (response) => {
     console.log("Response received at", new Date());
@@ -47,8 +48,10 @@ axios.interceptors.response.use(
   }
 );
 
+// Create an async function "initialLoad" to retrieve and populate breed options
 async function initialLoad() {
   try {
+    // Retrieve a list of breeds from the cat API using Axios
     const response = await axios.get("/breeds");
 
     breedSelect.innerHTML = "";
@@ -60,28 +63,28 @@ async function initialLoad() {
       breedSelect.appendChild(option);
     });
 
+    // Add event handler for breed selection
     breedSelect.addEventListener("change", handleBreedSelect);
+    // Initialize the Carousel
     Carousel.start();
   } catch (error) {
     console.error("Error loading breeds:", error);
   }
 }
 
+// Create an event handler for breedSelect
 async function handleBreedSelect() {
   const selectedBreedId = breedSelect.value;
 
   try {
-    const response = await axios.get(
-      `/images/search?breed_id=${selectedBreedId}`
-    );
+    // Retrieve information on the selected breed from the cat API using Axios
+    const response = await axios.get(`/images/search?breed_id=${selectedBreedId}`);
 
+    // Clear and repopulate the Carousel
     Carousel.clear();
 
     response.data.forEach((imageData) => {
-      const carouselItem = Carousel.createCarouselItem(
-        imageData.url,
-        imageData.id
-      );
+      const carouselItem = Carousel.createCarouselItem(imageData.url, imageData.id);
       Carousel.appendCarousel(carouselItem);
     });
 
@@ -100,6 +103,8 @@ async function handleBreedSelect() {
     console.error("Error loading breed information:", error);
   }
 }
+
+// Create a function "getFavourites" to retrieve favorites from the cat API
 async function getFavourites() {
   try {
     const response = await axios.get("/favourites");
@@ -118,14 +123,16 @@ async function getFavourites() {
   }
 }
 
+// Add an event listener to the "Get Favorites" button
 getFavouritesBtn.addEventListener("click", getFavourites);
 
+// Export the "favourite" function to handle image favoriting
 export async function favourite(imgId) {
   try {
     const response = await axios.get(`/favourites`, {
       params: {
-        image_id: imgId
-      }
+        image_id: imgId,
+      },
     });
 
     if (response.data.length > 0) {
@@ -138,4 +145,5 @@ export async function favourite(imgId) {
   }
 }
 
+// Execute the initialLoad function to populate breed options
 initialLoad();
